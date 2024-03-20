@@ -11,7 +11,7 @@ amph = 167101.0
 
 pts = 100
 r = 15.0
-ns = 2
+ns = 1
 
 dr = r / pts
 dk = 2.0 * np.pi / (2.0 * pts * dr)
@@ -29,17 +29,17 @@ print(dr * dk, np.pi/pts)
 # coords = [np.array([0.0, 0.0, 0.0]), np.array([1.0, 0.0, 0.0]), np.array([-0.333314, 0.942816, 0.0])]
 # params = [[78.15, 3.16572, -0.8476], [7.815, 1.16572, 0.4238], [7.815, 1.16572, 0.4238]]
 
-multiplicity = np.diag([1.0, 2.0])
-density = np.diag([0.0334, 0.0334])
-labels = ["O", "H"]
-coords = [np.array([0.0, 0.0, 0.0]), np.array([1.0, 0.0, 0.0]), np.array([-0.333314, 0.942816, 0.0])]
-params = [[78.15, 3.16572, -0.8476], [7.815, 1.16572, 0.4238]]
+# multiplicity = np.diag([1.0, 2.0])
+# density = np.diag([0.0334, 0.0334])
+# labels = ["O", "H"]
+# coords = [np.array([0.0, 0.0, 0.0]), np.array([1.0, 0.0, 0.0]), np.array([-0.333314, 0.942816, 0.0])]
+# params = [[78.15, 3.16572, -0.8476], [7.815, 1.16572, 0.4238]]
 
-# multiplicity = np.diag([1.0])
-# density = np.diag([0.021017479720736955])
-# labels = ["Ar"]
-# coords = [np.array([0.0, 0.0, 0.0])]
-# params = [[120.0, 3.4, 0.0]]
+multiplicity = np.diag([1.0])
+density = np.diag([0.021017479720736955])
+labels = ["Ar"]
+coords = [np.array([0.0, 0.0, 0.0])]
+params = [[120.0, 3.4, 0.0]]
 
 full_ns = int(multiplicity.sum())
 
@@ -176,9 +176,9 @@ while iter_count < maxstep:
 gr = tr + cr + 1.0
 
 plt.plot(rgrid, gr[:, 0, 0])
-plt.plot(rgrid, gr[:, 0, 1])
+#plt.plot(rgrid, gr[:, 0, 1])
 # plt.plot(rgrid, gr[:, 0, 2])
-plt.plot(rgrid, gr[:, 1, 1])
+#plt.plot(rgrid, gr[:, 1, 1])
 #plt.plot(rgrid, gr[:, 1, 2])
 #plt.plot(rgrid, gr[:, 2, 2])
 plt.show()
