@@ -9,8 +9,8 @@ beta = 1 / T / kB
 
 amph = 167101.0
 
-pts = 100
-r = 15.0
+pts = 1024
+r = 204.8
 ns = 1
 
 dr = r / pts
@@ -152,7 +152,7 @@ tr = np.zeros((pts, ns, ns))
 
 tol = 1e-5
 maxstep = 1000
-damp = 0.1
+damp = 0.01
 iter_count = 0
 
 cr = None
