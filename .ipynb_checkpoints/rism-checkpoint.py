@@ -3,14 +3,14 @@ from scipy.fftpack import dstn, idstn
 from scipy.special import erf
 import matplotlib.pyplot as plt
 
-T = 85.0
+T = 85.5
 kB = 1.0
 beta = 1 / T / kB
 
 amph = 167101.0
 
-pts = 1024
-r = 204.8
+pts = 100
+r = 14.0
 ns = 1
 
 dr = r / pts
@@ -72,8 +72,6 @@ def wk(dist, k):
                 out[:, i, j] += np.sin(k * dist_ij) / (k * dist_ij)
         
         out[:, i, j] /= mult_j
-
-
 
     return out
 
@@ -138,7 +136,6 @@ def RISM(cr, wk, n, rho, ur_ng_k):
     
     ck = ck - beta * ur_ng_k
 
-
     for l in np.arange(pts):
         hk[l] =  wk[l] @ (n @ ck[l] @ n) @np.linalg.inv(identity - rho @ wk[l] @ (n @ ck[l]) @ n) @ wk[l]
 
@@ -151,32 +148,52 @@ def RISM(cr, wk, n, rho, ur_ng_k):
 tr = np.zeros((pts, ns, ns))
 
 tol = 1e-5
-maxstep = 1000
-damp = 0.01
+maxstep = 10000
+
+gamma_min = 0.1
+alpha = 2.5
+scale = 0.2
+
 iter_count = 0
 
 cr = None
 
+delta_prev = 0.0
+
+gamma = gamma_min
+
 while iter_count < maxstep:
-    tr_prev = tr.copy()
+    tr_prev = tr
 
     cr_loop = HNC(ur_sr, tr)
     tr_curr = RISM(cr_loop, wk, multiplicity, density, u_ng_k)
     
-    tr_new = tr_prev + damp * (tr_curr - tr_prev)
+    delta = (tr_curr - tr_prev).max()
+    
+    if delta > delta_prev:
+        gamma_min *= scale
+        alpha = -np.log( (gamma * scale - gamma_min) / (1.0 - gamma_min) ) / (delta - tol)
+    
+    if delta > tol:
+        gamma = gamma_min + (1.0 - gamma_min) * np.exp(-alpha * (delta - tol))
+    else:
+        gamma = 1.0
+    
+    tr_new = tr_prev + gamma * (tr_curr - tr_prev)
    
     rms = np.sqrt(np.power(tr_new - tr_prev, 2.0).sum() * dr)
+    
     tr = tr_new
 
-
-    print(iter_count, rms)
+    print(iter_count, rms, gamma)
 
     if rms < tol:
-        cr = HNC(ur_sr, tr)
         break
     
     iter_count += 1
-
+    
+cr = HNC(ur_sr, tr)
+    
 gr = tr + cr + 1.0
 
 plt.plot(rgrid, gr[:, 0, 0])
