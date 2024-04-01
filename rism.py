@@ -3,15 +3,15 @@ from scipy.fftpack import dstn, idstn
 from scipy.special import erf
 import matplotlib.pyplot as plt
 
-T = 85.5
+T = 298.15
 kB = 1.0
 beta = 1 / T / kB
 
 amph = 167101.0
 
-pts = 100
+pts = 500
 r = 14.0
-ns = 1
+ns = 2
 
 dr = r / pts
 dk = 2.0 * np.pi / (2.0 * pts * dr)
@@ -29,17 +29,17 @@ print(dr * dk, np.pi / pts)
 # coords = [np.array([0.0, 0.0, 0.0]), np.array([1.0, 0.0, 0.0]), np.array([-0.333314, 0.942816, 0.0])]
 # params = [[78.15, 3.16572, -0.8476], [7.815, 1.16572, 0.4238], [7.815, 1.16572, 0.4238]]
 
-# multiplicity = np.diag([1.0, 2.0])
-# density = np.diag([0.0334, 0.0334])
-# labels = ["O", "H"]
-# coords = [np.array([0.0, 0.0, 0.0]), np.array([1.0, 0.0, 0.0]), np.array([-0.333314, 0.942816, 0.0])]
-# params = [[78.15, 3.16572, -0.8476], [7.815, 1.16572, 0.4238]]
+multiplicity = np.diag([1.0, 2.0])
+density = np.diag([0.0334, 0.0334])
+labels = ["O", "H"]
+coords = [np.array([0.0, 0.0, 0.0]), np.array([1.0, 0.0, 0.0]), np.array([-0.333314, 0.942816, 0.0])]
+params = [[78.15, 3.16572, -0.8476], [7.815, 1.16572, 0.4238]]
 
-multiplicity = np.diag([1.0])
-density = np.diag([0.021017479720736955])
-labels = ["Ar"]
-coords = [np.array([0.0, 0.0, 0.0])]
-params = [[120.0, 3.4, 0.0]]
+# multiplicity = np.diag([1.0])
+# density = np.diag([0.021017479720736955])
+# labels = ["Ar"]
+# coords = [np.array([0.0, 0.0, 0.0])]
+# params = [[120.0, 3.4, 0.0]]
 
 # multiplicity = np.diag([1.0, 1.0])
 # density = np.diag([0.01867, 0.01867])
@@ -159,7 +159,7 @@ def HNC(vr_sr, tr):
 
 
 def RISM(cr, wk, n, rho, ur_ng_k):
-    hk = np.zeros((pts, ns, ns))
+    tk = np.zeros((pts, ns, ns))
     identity = np.eye(ns)
 
     ck = hankel_forward(cr, rgrid, kgrid, dr)
@@ -167,14 +167,14 @@ def RISM(cr, wk, n, rho, ur_ng_k):
     ck = ck - beta * ur_ng_k
 
     for l in np.arange(pts):
-        hk[l] = (
+        tk[l] = (
             wk[l]
             @ (n @ ck[l] @ n)
             @ np.linalg.inv(identity - rho @ wk[l] @ (n @ ck[l]) @ n)
-            @ wk[l]
+            @ wk[l] - ck[l]
         )
 
-    tk = (hk - ck) - beta * ur_ng_k
+    tk -= beta * ur_ng_k
 
     tr = hankel_inverse(tk, rgrid, kgrid, dk)
 
@@ -187,10 +187,12 @@ tol = 1e-8
 maxstep = 10000
 
 gamma_min = 0.1
-alpha = 5.0
+alpha = 0.2
 scale = 0.7
 
 iter_count = 0
+
+damp = 0.7
 
 cr = None
 
@@ -218,7 +220,7 @@ while iter_count < maxstep:
     if gamma > 1.0:
         gamma = 1.0
 
-    tr_new = tr_prev + gamma * (tr_curr - tr_prev)
+    tr_new = tr_prev + damp * (tr_curr - tr_prev)
 
     rms = np.sqrt(np.power(tr_new - tr_prev, 2.0).sum() * dr)
 
@@ -236,9 +238,9 @@ cr = HNC(ur_sr, tr)
 gr = tr + cr + 1.0
 
 plt.plot(rgrid, gr[:, 0, 0])
-# plt.plot(rgrid, gr[:, 0, 1])
+plt.plot(rgrid, gr[:, 0, 1])
 # plt.plot(rgrid, gr[:, 0, 2])
-# plt.plot(rgrid, gr[:, 1, 1])
+plt.plot(rgrid, gr[:, 1, 1])
 # plt.plot(rgrid, gr[:, 1, 2])
 # plt.plot(rgrid, gr[:, 2, 2])
 plt.show()
